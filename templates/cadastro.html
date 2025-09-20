@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block conteudo %}
+<div class="card p-4">
+    <h2 class="mb-4">Cadastro</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label>Usuário</label>
+            <input type="text" name="usuario" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label>Senha</label>
+            <input type="password" name="senha" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-success w-100">Cadastrar</button>
+        <p class="mt-2 text-center">Já tem conta? <a href="{{ url_for('login') }}">Faça login</a></p>
+    </form>
+</div>
+{% endblock %}

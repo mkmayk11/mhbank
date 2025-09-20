@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block conteudo %}
+<div class="card p-4 text-center">
+    <h2>Bem-vindo, {{ usuario }}!</h2>
+    <p class="fs-4">Saldo: R$ {{ saldo|round(2) }}</p>
+    <div class="d-flex justify-content-center gap-2 mt-3 flex-wrap">
+        <a href="{{ url_for('deposito') }}" class="btn btn-primary">Depósito</a>
+        <a href="{{ url_for('saque') }}" class="btn btn-warning">Saque</a>
+        <a href="{{ url_for('alterar_senha') }}" class="btn btn-info">Alterar senha</a>
+        <a href="{{ url_for('historico') }}" class="btn btn-secondary">Histórico</a>
+        <a href="{{ url_for('roleta') }}" class="btn btn-success">Roleta</a>
+        <a href="{{ url_for('logout') }}" class="btn btn-danger">Sair</a>
+        <a href="{{ url_for('transferencia') }}" class="btn btn-primary btn-lg mt-3">Transferir</a>
+
+    </div>
+</div>
+{% endblock %}
