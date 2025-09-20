@@ -1,16 +1,123 @@
 {% extends "base.html" %}
 {% block conteudo %}
-<div class="card p-4">
-    <h2>Roleta</h2>
+<div class="card p-4 text-center">
+    <h2>🎰 Roleta Sofisticada</h2>
+
     {% if resultado %}
-        <div class="alert alert-info">{{ resultado }}</div>
+        <div id="resultado" class="alert alert-info mt-3">{{ resultado }}</div>
+    {% else %}
+        <div id="resultado" class="alert alert-info mt-3"></div>
     {% endif %}
-    <form method="POST">
+
+    <canvas id="roletaCanvas" width="150" height="150"></canvas>
+    <div class="seta">▼</div>
+
+    <form id="form-roleta" method="POST">
         <div class="mb-3">
             <label>Valor da aposta (R$)</label>
             <input type="number" step="0.01" name="aposta" class="form-control" required>
         </div>
-        <button type="submit" class="btn btn-success w-100">Jogar</button>
+        <div class="mb-3">
+            <label>Escolha um número (1-12)</label>
+            <input type="number" name="numero_escolhido" min="1" max="12" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-success w-100">🎲 Jogar</button>
     </form>
 </div>
+
+<style>
+canvas {
+    border: 2px solid #333;
+    border-radius: 50%;
+    margin-top: 10px;
+}
+.seta {
+    font-size: 20px;
+    color: red;
+    position: relative;
+    top: -130px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const canvas = document.getElementById("roletaCanvas");
+    const ctx = canvas.getContext("2d");
+    const form = document.getElementById("form-roleta");
+
+    const numeros = Array.from({length:12}, (_,i)=>i+1);
+    const centro = canvas.width/2;
+    const raio = centro - 10;
+
+    function desenharRoleta(angulo=0){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        const slice = 2*Math.PI/numeros.length;
+
+        numeros.forEach((num,i)=>{
+            ctx.beginPath();
+            ctx.moveTo(centro,centro);
+            ctx.arc(centro,centro,raio,i*slice+angulo,(i+1)*slice+angulo);
+            ctx.fillStyle = i%2===0?'#007bff':'#ffcc00'; // azul e amarelo
+            ctx.fill();
+            ctx.save();
+            ctx.translate(centro,centro);
+            ctx.rotate(i*slice + slice/2 + angulo); // centra o número na fatia
+            ctx.fillStyle = "#000";
+            ctx.font = "12px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(num, raio-15, 5);
+            ctx.restore();
+        });
+    }
+
+    desenharRoleta();
+
+    form.addEventListener("submit", function(e){
+        e.preventDefault();
+        const numeroEscolhido = parseInt(form.numero_escolhido.value);
+
+        // sorteia o número final
+        const numeroSorteado = Math.floor(Math.random()*12)+1;
+        const slice = 2*Math.PI/numeros.length;
+        const voltas = 5;
+
+        // ajusta ângulo final para que o número sorteado fique bem centralizado sob a seta
+        const anguloFinal = (voltas*2*Math.PI) - ((numeroSorteado-1) * slice) - slice/2 + Math.PI/2;
+        let angulo = 0;
+        let start = null;
+
+        function easeOutQuad(t) {
+            return t*(2-t); // easing para desacelerar
+        }
+
+        function animarRoleta(timestamp){
+            if(!start) start = timestamp;
+            const progresso = (timestamp - start)/8000; // duração total 3s
+            const eased = easeOutQuad(Math.min(progresso,1));
+            const angAtual = anguloFinal * eased;
+            desenharRoleta(angAtual);
+            if(progresso < 1){
+                requestAnimationFrame(animarRoleta);
+            } else {
+                desenharRoleta(anguloFinal); // roleta parada
+                setTimeout(()=>{
+                    desenharRoleta(0); // volta para posição inicial
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'numero_sorteado';
+                    input.value = numeroSorteado;
+                    form.appendChild(input);
+                    form.submit();
+                }, 5000);
+            }
+        }
+
+        requestAnimationFrame(animarRoleta);
+    });
+});
+</script>
 {% endblock %}
+
+
